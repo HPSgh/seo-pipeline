@@ -1,0 +1,7 @@
+credentials.json
+token.json
+gsc_data.db
+venv/
+__pycache__/
+*.pyc
+.env
