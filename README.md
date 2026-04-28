@@ -1,6 +1,6 @@
 # Automated SEO Analytics Pipeline
 
-An end-to-end data pipeline that automatically extracts search performance data from the Google Search Console API, transforms it with Pandas, and stores it in a SQLite database for long-term historical analysis.
+An end-to-end data pipeline that automatically extracts search performance data from the Google Search Console API, transforms it with Pandas, and stores it in a SQLite database for long-term historical analysis — with a terminal report view and a local browser dashboard.
 
 > Unlike the native Google Search Console dashboard, this pipeline retains data indefinitely and enables custom SQL-based analysis — no manual exports required.
 
@@ -18,16 +18,22 @@ Google Search Console only displays data for the last 16 months and requires man
 Google Search Console API
         │
         ▼
-  extract.py          ← Authenticates via OAuth 2.0 and pulls raw data
+  extract.py       ← Authenticates via OAuth 2.0 and pulls raw query/page data
         │
         ▼
-  transform.py        ← Cleans data, enforces types, calculates custom metrics
+  transform.py     ← Cleans data, enforces types, calculates custom metrics
         │
         ▼
-  load.py             ← Loads DataFrame into SQLite, supports SQL querying
+  load.py          ← Loads DataFrame into SQLite database
         │
         ▼
-  gsc_data.db         ← Local database for long-term historical storage
+  gsc_data.db      ← Local SQLite database for long-term historical storage
+        │
+        ├──────────────────────────┐
+        ▼                          ▼
+  query.py                   dashboard.py
+  ← SQL reports               ← Visual browser
+    in terminal                 dashboard (HTML)
 ```
 
 ---
@@ -41,7 +47,7 @@ Google Search Console API
 | Auth | OAuth 2.0 (google-auth-oauthlib) | Secure API authentication |
 | Transformation | Pandas | Data cleaning and custom metrics |
 | Storage | SQLite | Lightweight local database |
-| Environment | python-dotenv | Secrets management |
+| Visualization | Chart.js | Browser-based dashboard charts |
 | Containerization | Docker | Portable deployment |
 
 ---
@@ -50,18 +56,20 @@ Google Search Console API
 
 ```
 seo-pipeline/
+├── main.py            # Pipeline entry point — runs all steps in sequence
 ├── auth.py            # OAuth 2.0 authentication and token management
 ├── extract.py         # GSC API data extraction
 ├── transform.py       # Pandas transformation and custom metrics
 ├── load.py            # SQLite loading and SQL querying
-├── credentials.json   # Google OAuth credentials (not committed to Git)
-├── token.json         # Cached auth token (not committed to Git)
-├── gsc_data.db        # SQLite database (auto-generated on run)
-├── .env               # Environment variables (not committed to Git)
-├── .gitignore         # Excludes secrets and generated files
+├── query.py           # Preset SQL reports printed in the terminal
+├── dashboard.py       # Generates and opens a visual browser dashboard
+├── requirements.txt   # Python dependencies
 ├── Dockerfile         # Container definition
+├── .gitignore         # Excludes secrets and auto-generated files
 └── README.md          # This file
 ```
+
+> `credentials.json`, `token.json`, and `gsc_data.db` are auto-generated locally and excluded from version control.
 
 ---
 
@@ -103,7 +111,7 @@ source venv/bin/activate
 
 ### 3. Install dependencies
 ```bash
-pip install pandas google-auth-oauthlib google-auth-httplib2 google-api-python-client
+pip install -r requirements.txt
 ```
 
 ### 4. Add your Google credentials
@@ -125,11 +133,14 @@ site_url = 'sc-domain:yoursite.com'
 
 ### 6. Run the pipeline
 ```bash
-# Step 1 — Authenticate (opens browser on first run)
-python auth.py
+# Extract, transform, and load fresh data into SQLite
+python main.py
 
-# Step 2 — Extract, transform, and load
-python load.py
+# View SQL reports in the terminal
+python query.py
+
+# Open the visual dashboard in your browser
+python dashboard.py
 ```
 
 On first run, a browser window will open for Google OAuth authentication. After approving, a `token.json` file is saved so subsequent runs are fully automated.
@@ -141,7 +152,7 @@ On first run, a browser window will open for Google OAuth authentication. After 
 To point the pipeline at a different website:
 1. Ensure your Google account has access to that site's Search Console property
 2. Update `site_url` in `extract.py` to the exact property URL
-3. Re-run `python load.py`
+3. Re-run `python main.py`
 
 ---
 
