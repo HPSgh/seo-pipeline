@@ -5,21 +5,22 @@ from load import load_data_to_db
 
 def main():
     try:
-        # Step 1: Authenticate and get credentials
         print("Authenticating and getting credentials...")
         credentials = get_credentials()
 
-        # Step 2: Extract data from Google Search Console
         print("Extracting data from Google Search Console...")
         raw_data = fetch_gsc_data()
 
-        # Step 3: Transform the data
         print("Transforming data...")
-        transformed_data = transform_data()
+        transformed_data = transform_data(raw_data)
 
-        # Step 4: Load the data into a database
+        if transformed_data is None:
+            print("Pipeline stopped: no data to load yet.")
+            return
+
         print("Loading data into database...")
         load_data_to_db(transformed_data)
+        print("Pipeline completed successfully!")
     except Exception as e:
         print(f"An error occurred: {e}")
 

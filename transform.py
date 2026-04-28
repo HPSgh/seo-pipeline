@@ -1,26 +1,12 @@
 import pandas as pd
 
-def transform_data():
+def transform_data(response=None):
+    if response is None or 'rows' not in response:
+        print("No data returned from GSC yet.")
+        return None
+    
     records = []
-    mock_response = {
-        "rows": [
-            {
-                "keys": ["example query 1", "https://hpsgh.github.io/page1"],
-                "clicks": 100,
-                "impressions": 1000,
-                "ctr": 0.1,
-                "position": 5
-            },
-            {
-                "keys": ["example query 2", "https://hpsgh.github.io/page2"],
-                "clicks": 50,
-                "impressions": 500,
-                "ctr": 0.1,
-                "position": 10
-            }
-        ]
-    }
-    for row in mock_response['rows']:
+    for row in response['rows']:
         records.append({
             "query": row['keys'][0],
             "page": row['keys'][1],
@@ -29,6 +15,7 @@ def transform_data():
             "ctr": row['ctr'],
             "position": row['position']
         })
+
     df = pd.DataFrame(records)
     df = df.fillna({'clicks': 0, 'impressions': 0, 'ctr': 0.0, 'position': 0.0})
     df['clicks'] = df['clicks'].astype(int)
